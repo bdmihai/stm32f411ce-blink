@@ -21,7 +21,7 @@
 #| THE USE OR OTHER DEALINGS IN THE SOFTWARE.                                 |
 #|____________________________________________________________________________|
 #|                                                                            |
-#|  Author: Mihai Baneu                           Last modified: 02.Jan.2021  |
+#|  Author: Mihai Baneu                           Last modified: 03.Jan.2021  |
 #|                                                                            |
 #|____________________________________________________________________________|
 
@@ -55,7 +55,19 @@ reset:
 	$(CONFIG_OPENOCDDIR)/openocd -s $(CONFIG_OPENOCDCONFIGDIR) -f $(CONFIG_OPENOCD_INTERFACE) -f $(CONFIG_OPENOCD_BOARD) -c "init; reset; exit"
 
 flash: all
-	$(CONFIG_OPENOCDDIR)/openocd -s $(CONFIG_OPENOCDCONFIGDIR) -f $(CONFIG_OPENOCD_INTERFACE) -f $(CONFIG_OPENOCD_BOARD) -c "program bin/application.elf verify; reset; exit"
+	$(CONFIG_OPENOCDDIR)/openocd -s $(CONFIG_OPENOCDCONFIGDIR) -f $(CONFIG_OPENOCD_INTERFACE) -f $(CONFIG_OPENOCD_BOARD) -c "program bin/application.bin 0x08000000 verify reset exit"
+
+flash-banks:
+	$(CONFIG_OPENOCDDIR)/openocd -s $(CONFIG_OPENOCDCONFIGDIR) -f $(CONFIG_OPENOCD_INTERFACE) -f $(CONFIG_OPENOCD_BOARD) -c "init; echo [flash banks]; exit"
+
+flash-list:
+	$(CONFIG_OPENOCDDIR)/openocd -s $(CONFIG_OPENOCDCONFIGDIR) -f $(CONFIG_OPENOCD_INTERFACE) -f $(CONFIG_OPENOCD_BOARD) -c "init; echo [flash list]; exit"
+
+flash-info:
+	$(CONFIG_OPENOCDDIR)/openocd -s $(CONFIG_OPENOCDCONFIGDIR) -f $(CONFIG_OPENOCD_INTERFACE) -f $(CONFIG_OPENOCD_BOARD) -c "init; echo [flash info $(bank)]; exit"
+
+flash-read:
+	$(CONFIG_OPENOCDDIR)/openocd -s $(CONFIG_OPENOCDCONFIGDIR) -f $(CONFIG_OPENOCD_INTERFACE) -f $(CONFIG_OPENOCD_BOARD) -c "init; echo [flash read_bank $(bank) bin/flash_$(bank).hex]; exit"
 
 stflash:
 	~/work/tools/stlink/build/Release/bin/st-flash --reset write bin/application.bin 0x08000000
