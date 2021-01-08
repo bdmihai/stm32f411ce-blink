@@ -36,9 +36,6 @@ void system_init()
     /* configure Flash prefetch, Instruction cache, Data cache */ 
     SET_BIT(FLASH->ACR, FLASH_ACR_ICEN | FLASH_ACR_DCEN | FLASH_ACR_PRFTEN);
 
-    /* enable the FPU */
-    SCB->CPACR |= ((3UL << 10*2)|(3UL << 11*2));  /* set CP10 and CP11 Full Access */
-
     /* configure the main internal regulator output voltage */
     SET_BIT(RCC->APB1ENR, RCC_APB1ENR_PWREN);
     MODIFY_REG(PWR->CR, PWR_CR_VOS, PWR_REGULATOR_VOLTAGE_SCALE2);
@@ -90,10 +87,6 @@ void system_init()
     SET_BIT(RCC->AHB1ENR, RCC_AHB1ENR_GPIOCEN);
     SET_BIT(RCC->AHB1ENR, RCC_AHB1ENR_GPIOHEN);
 
-    /* set interrupt group priority (https://www.freertos.org/RTOS-Cortex-M3-M4.html) */
-    /* 4 bits for pre-emption priority, 0 bits for subpriority */
-    NVIC_SetPriorityGrouping(NVIC_PRIORITYGROUP_4);
-
     /* enable DWT */
     CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
     DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;
@@ -135,4 +128,22 @@ int _write(int file, char *ptr, int len)
         ITM_SendChar((*ptr++));
     }
     return len;
+}
+
+/** Hard fault - blink four short flash every two seconds */
+void HardFault_Handler()
+{
+    blink(4);
+}
+
+/** Bus fault - blink five short flashes every two seconds */
+void BusFault_Handler()
+{
+    blink(5);
+}
+
+/** Usage fault - blink six short flashes every two seconds */
+void UsageFault_Handler()
+{
+    blink(6);
 }

@@ -62,7 +62,7 @@ int main(void)
     gpio_init();
 
     /* create the tasks specific to this application. */
-    xTaskCreate(vTaskLED, (const portCHAR *)"vTaskLED", configMINIMAL_STACK_SIZE, NULL, 3, NULL);
+    xTaskCreate(vTaskLED, "vTaskLED", configMINIMAL_STACK_SIZE, NULL, 3, NULL);
 
     /* start the scheduler. */
     vTaskStartScheduler();

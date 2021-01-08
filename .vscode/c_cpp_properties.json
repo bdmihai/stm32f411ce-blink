@@ -18,7 +18,8 @@
             "cppStandard": "c++17",
             "defines": [
                 "STM32F411xE",
-                "HAL_MODULE_ENABLED"
+                "HAL_MODULE_ENABLED",
+                "__ARM_ARCH_7M__=1"
             ]
         }
     ],
