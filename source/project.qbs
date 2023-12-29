@@ -33,9 +33,9 @@ Project {
     qbsSearchPaths: "../qbs"
 
     references: [
-        "startup/startup.qbs",
-        "linker/linker.qbs",
-        "cmsis/cmsis.qbs",
+        'boot/boot.qbs',
+        'cmsis/cmsis.qbs',
+        'runtime/runtime.qbs',
         "hal/hal.qbs",
         "freertos/freertos.qbs",
         "app/app.qbs"

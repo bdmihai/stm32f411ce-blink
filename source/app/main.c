@@ -68,6 +68,5 @@ int main(void)
     vTaskStartScheduler();
 
     /* should never get here ... */
-    blink(10);
     return 0;
 }

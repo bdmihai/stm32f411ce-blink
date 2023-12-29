@@ -1,6 +1,6 @@
 /*_____________________________________________________________________________
  │                                                                            |
- │ COPYRIGHT (C) 2021 Mihai Baneu                                             |
+ │ COPYRIGHT (C) 2023 Mihai Baneu                                             |
  │                                                                            |
  | Permission is hereby  granted,  free of charge,  to any person obtaining a |
  | copy of this software and associated documentation files (the "Software"), |
@@ -21,13 +21,11 @@
  | THE USE OR OTHER DEALINGS IN THE SOFTWARE.                                 |
  |____________________________________________________________________________|
  |                                                                            |
- |  Author: Mihai Baneu                           Last modified: 02.Jan.2021  |
+ |  Author: Mihai Baneu                           Last modified: 29.Dec.2023  |
  |                                                                            |
  |___________________________________________________________________________*/
 
 #include "stm32f4xx.h"
-#include "stm32f4xx_hal.h"
-#include "stm32rtos.h"
 #include "gpio.h"
 #include "system.h"
 
@@ -38,13 +36,13 @@ void system_init()
 
     /* configure the main internal regulator output voltage */
     SET_BIT(RCC->APB1ENR, RCC_APB1ENR_PWREN);
-    MODIFY_REG(PWR->CR, PWR_CR_VOS, PWR_REGULATOR_VOLTAGE_SCALE2);
+    MODIFY_REG(PWR->CR, PWR_CR_VOS_Msk, PWR_CR_VOS_1);
 
-    /* enable the external High Speed Clock */
+    /* enable the external High Speed Clock @25MHz*/
     SET_BIT(RCC->CR, RCC_CR_HSEON);
     do {
     } while ((RCC->CR & RCC_CR_HSERDY_Msk) != RCC_CR_HSERDY);
-
+    
     /* configure the PLL */
     MODIFY_REG(RCC->PLLCFGR, RCC_PLLCFGR_PLLSRC_Msk, RCC_PLLCFGR_PLLSRC_HSE);
     MODIFY_REG(RCC->PLLCFGR, RCC_PLLCFGR_PLLM_Msk, 25 << RCC_PLLCFGR_PLLM_Pos);
@@ -87,9 +85,16 @@ void system_init()
     SET_BIT(RCC->AHB1ENR, RCC_AHB1ENR_GPIOCEN);
     SET_BIT(RCC->AHB1ENR, RCC_AHB1ENR_GPIOHEN);
 
-    /* enable DWT */
-    CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
-    DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;
+    /* one us timer for delay */
+    TIM10->PSC = (system_cpu_f() / 1000000) - 1;
+    MODIFY_REG(TIM10->CR1, TIM_CR1_CEN_Msk, TIM_CR1_CEN);
+
+    /* stop timer when debuggng */
+    SET_BIT(DBGMCU->APB2FZ, DBGMCU_APB2_FZ_DBG_TIM10_STOP);
+
+    /* set-up the vector table in ram */
+    extern char __isr_vector_start;
+    SCB->VTOR = (uintptr_t) &__isr_vector_start;
 }
 
 /**
@@ -97,53 +102,12 @@ void system_init()
  */
 void delay_us(const uint32_t us)
 {
-    DWT->CYCCNT = 0;
+    SET_BIT(TIM10->EGR, TIM_EGR_UG);
     do {
-    } while (DWT->CYCCNT < (us * (configCPU_CLOCK_HZ / 1000000)));
+    } while (TIM10->CNT < us );
 }
 
-/**
- * blink the led in case of problems
- * This function can only be called after the initialization phase. It is used for
- * faults after RTOS start.
-*/
-void blink(const uint8_t n)
+unsigned int system_cpu_f()
 {
-    for (;;) {
-        for (int i = 0; i < n; i++) {
-            gpio_set_blue_led();
-            delay_us(500000);
-
-            gpio_reset_blue_led();
-            delay_us(500000);
-        }
-        delay_us(2000000);
-    }
-}
-
-int _write(int file, char *ptr, int len)
-{
-    (void)(file);
-    for (int i = 0; i < len; i++) {
-        ITM_SendChar((*ptr++));
-    }
-    return len;
-}
-
-/** Hard fault - blink four short flash every two seconds */
-void HardFault_Handler()
-{
-    blink(4);
-}
-
-/** Bus fault - blink five short flashes every two seconds */
-void BusFault_Handler()
-{
-    blink(5);
-}
-
-/** Usage fault - blink six short flashes every two seconds */
-void UsageFault_Handler()
-{
-    blink(6);
+    return 100000000;
 }

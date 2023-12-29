@@ -33,8 +33,8 @@ Product {
     Depends { name: "cmsis" }
     Depends { name: "hal" }
     Depends { name: "freertos" }
-    Depends { name: "startup" }
-    Depends { name: "linker" }
+    Depends { name: "boot" }
+    Depends { name: "runtime" }
 
     files: [
         "*.h",

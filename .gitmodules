@@ -4,12 +4,6 @@
 [submodule "qbs/modules/stm32"]
 	path = qbs/modules/stm32
 	url = https://github.com/bdmihai/stm32-qbs
-[submodule "source/startup"]
-	path = source/startup
-	url = https://github.com/bdmihai/stm32-startup
-[submodule "source/linker"]
-	path = source/linker
-	url = https://github.com/bdmihai/stm32-linker
 [submodule "source/hal"]
 	path = source/hal
 	url = https://github.com/bdmihai/stm32-hal
@@ -19,3 +13,9 @@
 [submodule "source/freertos"]
 	path = source/freertos
 	url = https://github.com/bdmihai/stm32-freertos
+[submodule "source/boot"]
+	path = source/boot
+	url = git@github.com:bdmihai/stm32-boot
+[submodule "source/runtime"]
+	path = source/runtime
+	url = git@github.com:bdmihai/stm32-runtime
